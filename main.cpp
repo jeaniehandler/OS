@@ -71,13 +71,13 @@ int main(int argc,char* argv[])
 				Main.set_mode(set); 			
 				if(Main.get_mode() == true)    
 	                    	{	
-			//		cout << "IN READ" << endl;	
+	//				cout << "IN READ" << endl;	
                                 	read(C_M[0],&addr,sizeof(addr));
-					bool done = Main.end(addr);
-					if(done)
+					bool exist = Main.done(addr);
+					if(exist)
 					{
 						val = -1; 
-			//			cout << "end of File" << endl;
+			//			cout << "address doesn't exist" << endl;
                                 		write(M_C[1],&val,sizeof(val));
 						cpu = 0; 
 							
@@ -91,17 +91,20 @@ int main(int argc,char* argv[])
 				}
                         	if (Main.get_mode() == false)
                         	{
-                       	  //      cout << "IN WRITE" << endl; 
+          //             	        cout << "IN WRITE" << endl; 
 					read(C_M[0],&addr, sizeof(addr));
 					read(C_M[0],&val, sizeof(val));
 					Main.write(addr,val); 
+					int result = Main.read(addr);
+	//				cout << "WRITTEN IN MEMORY : " << result << endl; 
+					write(M_C[1],&cpu,sizeof(cpu));  
 					cpu = -1; 
 			 	}	
        	 
 				if(cpu == 0)
 				{
 					read(C_M[0],&on,sizeof(on));
-			//		cout << "MEM OFF" <<endl; 
+					cout << "MEM OFF" <<endl; 
 					close(M_C[1]);
 					close(C_M[0]);
 					kill(pid,SIGKILL); 
@@ -127,7 +130,7 @@ int main(int argc,char* argv[])
 			stat = OS.get_stat(); 
 			if(stat == 0)//Retrieve Instr
                 	{
-				cout << "IN STAT 0" << endl;
+		//		cout << "IN STAT 0" << endl;
 				ready = 1; 
 				write(C_M[1],&ready,sizeof(ready));
 				read(M_C[0],&ready,sizeof(ready));
@@ -138,12 +141,19 @@ int main(int argc,char* argv[])
 					write(C_M[1],&mode,sizeof(mode));
 					write(C_M[1],&pc, sizeof(pc));	
 					read(M_C[0],&retrieved, sizeof(retrieved));
-					cout << "PC SENT : " << pc << " MEMORY RETURNS : " << retrieved << endl;
-					if(retrieved == -1)
+	//				cout << "PC SENT : " << pc << " MEMORY RETURNS : " << retrieved << endl;
+					if(retrieved == 50)
 					{
 						OS.set_stat(3);
 						continue;
 					}
+				/*	if(retrieved == 30)
+					{
+						OS.set_op(0);
+						OS.set_ir(retrieved);
+						OS.set_stat(2); 
+						continue;
+					}*/
 					OS.set_ir(retrieved);
 					OS.set_stat(1);
 					OS.inc_pc();
@@ -152,7 +162,7 @@ int main(int argc,char* argv[])
 			}
 			if(stat == 1)//Retrieve Op
 			{
-				cout << "IN STAT 1" << endl; 
+	//			cout << "IN STAT 1" << endl; 
 				ready = 1; 
 				write(C_M[1],&ready,sizeof(ready));
 				read(M_C[0],&ready,sizeof(ready));
@@ -163,12 +173,19 @@ int main(int argc,char* argv[])
 					write(C_M[1],&mode,sizeof(mode));
 					write(C_M[1],&pc,sizeof(pc));
 					read(M_C[0],&retrieved,sizeof(retrieved));
-					cout << "ADDR SENT : " << pc << " MEMORY RETURNS : " << retrieved << endl;
+			//		cout << "ADDR SENT : " << pc << " MEMORY RETURNS : " << retrieved << endl;
 					if(retrieved == -1)
 					{
 						OS.set_stat(3);
 						continue;
 					}
+				/*	if(retrieved == 30)
+					{
+						OS.set_op(0);
+						OS.set_ir(retrieved);
+						OS.set_stat(2); 
+						continue;
+					}*/
 					OS.set_op(retrieved);
 					OS.set_stat(2);
 					OS.inc_pc(); 
@@ -177,25 +194,29 @@ int main(int argc,char* argv[])
 			}
 			if(stat == 2)//Execute
 			{
-		cout << "IN STAT 2" << endl; 
+	//	cout << "IN STAT 2" << endl; 
 				ready = -1; 
 				write(C_M[1],&ready,sizeof(ready));
 				read(M_C[0],&ready,sizeof(ready));
 				if(ready == -1)
 				{
-					cout << "EXECUTE" << endl;
-				cout << "INSTR : " << OS.get_ir() << " OP : " << OS.get_op() << endl;
+			//		cout << "EXECUTE" << endl;
+					if(OS.get_ir() == 30)
+					{
+						OS.set_op(0);
+					}
+			//			cout << "INSTR : " << OS.get_ir() << " OP : " << OS.get_op() << endl;
 						OS.execute(OS.get_ir(),OS.get_op()); 
-						cout << endl;
+			//			cout << endl;
 					if(OS.get_stat() == 1)
 					{
 						continue; 
 					}
-					if(OS.get_flag() == true)
+					if(OS.get_sFlag() == true)
 					{
 						OS.set_stat(4); 		  
 					}
-					if(OS.get_ir() > 28)
+					if(OS.get_ir() > 30)
 					{
 						OS.set_stat(3); 
 					}
@@ -220,10 +241,33 @@ int main(int argc,char* argv[])
 			}
 			if(stat == 4)
 			{
-				cout << "IN STAT 4" << endl; 
+			//	cout << "IN STAT 4" << endl; 
 					OS.restore_pc();
 					OS.set_stat(0); 
 					continue; 
+			}
+			if(stat == 5)
+			{
+			//	cout << "IN STAT 5" << endl; 
+				ready = 1; 
+				write(C_M[1],&ready,sizeof(ready));
+				read(M_C[0],&ready,sizeof(ready));
+				if(ready)
+				{
+					
+					mode = false; 	
+					int loc = OS.get_op();
+					int send = OS.get_ac(); 
+					write(C_M[1],&mode,sizeof(mode));
+					write(C_M[1],&loc,sizeof(loc));
+					write(C_M[1],&send,sizeof(send));
+					read(M_C[0],&ready,sizeof(ready));
+					if(ready)
+					{
+						OS.set_stat(0);
+						continue; 
+					}
+				}	
 			}
 		}
 	

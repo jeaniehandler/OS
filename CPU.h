@@ -9,7 +9,9 @@ using namespace std;
 class CPU
 {
 	private:
-		bool IFLAG; 
+		int LAST;
+		bool WAIT; 
+		int FP; 
 		int PC;
 		int IR; 
 		int X;
@@ -25,13 +27,18 @@ class CPU
 		int IC; 
 		bool SFLAG; 
 		bool sys_mode; 
-
+		int IFLAG;
 	public:
-		void Int();
+		int get_last(); 
+		void restore_reg(); 
+		void set_next(int op);
+		void set_fp(int addr);
+		int get_fp(); 
+		void Int(int op);
 		void IRet();
-		void save_reg();
+		void save_reg(int op);
 		void dec_pc();
-		bool get_flag(); 
+		bool get_sFlag(); 
 		void store_pc();
 		void restore_pc(); 
 		int get_sp(); 
@@ -81,6 +88,10 @@ class CPU
 		void print_Y();
 		void inc_sp();
 		void dec_sp(); 
-		bool get_iFlag(); 
+		int get_iFlag(); 
+		void set_iFlag(int set); 
+		int get_ac(); 
+		void reset_reg(); 
+		void save_last(); 
 };
 #endif

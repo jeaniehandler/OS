@@ -1,6 +1,5 @@
 #ifndef MEMORY_H
 #define MEMORY_H        
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream> 
@@ -24,6 +23,6 @@ class Memory
 		void set_mode(bool set); 
 		bool get_mode(); 
 		int ret_instr(string parseIt);
-		bool end(int addr);
+		bool done(int addr); 
 };
 #endif 
