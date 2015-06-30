@@ -1,17 +1,16 @@
-README
-Jeanie Handler
+README OS
 
 CPU.h : Header file for CPU.cpp
 
 
-CPU.cpp : Contains Instruction execution communicates with Memory by sending an instruction to be fetched then executing accordingly\
+CPU.cpp : Contains Instruction execution communicates with Memory by sending an instruction to be fetched then executing accordingly
 
 
 Memory.h: Header file for Memory.cpp
 
 Memory.cpp: Initializes itself with the program file and sends the CPU instructions and operands
 
-main.cpp: creates to pipes before forking two processes creating the CPU and Memory which communicate to each other by fetching and executing instructions until the program is complete\
+main.cpp: creates to pipes before forking two processes creating the CPU and Memory which communicate to each other by fetching and executing instructions until the program is complete
 
 
 sample1.txt: general set up of how to work the program
